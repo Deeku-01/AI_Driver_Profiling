@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 import sys
+from src.styles.custom import apply_custom_style, card, metric_card
 
 # Add the project root directory to Python path
 project_root = Path(__file__).parent.parent
@@ -165,7 +166,14 @@ def show_driving_patterns(driver_info):
 
 def show_recommendations(driver_details):
     """Main function to show model recommendations"""
-    st.title("UIB Model Recommendations")
+    apply_custom_style()
+    
+    st.markdown("""
+        <div style="text-align: center; padding: 1rem 0;">
+            <h1>🎯 UIB Model Recommendations</h1>
+            <p style="color: #6c757d;">Find the perfect insurance model based on your driving patterns</p>
+        </div>
+    """, unsafe_allow_html=True)
     
     if not driver_details["success"]:
         st.error("Error loading driver details")
@@ -180,18 +188,38 @@ def show_recommendations(driver_details):
     # Get model recommendation
     recommended_model, features = get_model_recommendation(risk_score, info['total_km'], info['driving_style'])
     
-    col1, col2 = st.columns(2)
+    # Create tabs with modern styling
+    tabs = st.tabs(["📊 Profile & Risk", "🎯 Score Analysis", "💡 Model Comparison", "💰 Cost Analysis"])
     
-    with col1:
-        st.header("Your Driving Profile")
-        st.write(f"Driving Style: {info['driving_style'].title()}")
-        st.write(f"Vehicle Type: {info['vehicle_type'].title()}")
-        st.write(f"Experience: {info['years_of_experience']} years")
-        st.write(f"Total Distance: {info['total_km']:.2f} km")
-    
-    with col2:
-        st.header("Risk Assessment")
-        create_risk_gauge(risk_score)
+    with tabs[0]:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(card("Your Driving Profile", f"""
+                <div style="font-size: 1.1rem;">
+                    <p><strong>Driving Style:</strong> {info['driving_style'].title()}</p>
+                    <p><strong>Vehicle Type:</strong> {info['vehicle_type'].title()}</p>
+                    <p><strong>Experience:</strong> {info['years_of_experience']} years</p>
+                    <p><strong>Total Distance:</strong> {info['total_km']:.2f} km</p>
+                    <p><strong>Monthly Distance:</strong> {info['total_km']/12:.2f} km</p>
+                </div>
+            """), unsafe_allow_html=True)
+            
+            if info['total_km']/12 < 1000:
+                st.info("💡 Low monthly usage suggests Pay-As-You-Drive might be cost-effective")
+            elif info['total_km']/12 > 2000:
+                st.info("💡 High monthly usage suggests focusing on driving behavior for better rates")
+        
+        with col2:
+            st.markdown(card("Risk Assessment", ""))
+            create_risk_gauge(risk_score)
+            
+            if info['driving_style'] == 'conservative':
+                st.success("👍 Conservative driving style is ideal for Pay-How-You-Drive benefits")
+            elif info['driving_style'] == 'aggressive':
+                st.warning("⚠️ Aggressive driving style might benefit from Manage-How-You-Drive coaching")
+
+    # Continue updating the other tabs similarly...
     
     st.header("Driving Patterns Analysis")
     show_driving_patterns(info)

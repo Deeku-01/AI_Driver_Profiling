@@ -7,7 +7,7 @@ The AI Driver Profiling System is an advanced analytics platform that leverages 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/AI_Driver_Profiling.git
+git clone https://github.com/Deeku-01/AI_Driver_Profiling.git
 ```
 2. Change directory:
 ```bash
